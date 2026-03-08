@@ -9,8 +9,8 @@ Example interactions showing how the HiDock skill handles typical user requests.
 **User:** Sync my HiDock meetings
 
 **Claude's actions:**
-1. Run pre-flight check: `bash scripts/check-hidock-ready.sh`
-2. Run sync: `bash scripts/sync-recordings.sh`
+1. Run pre-flight check: `bash <skill-dir>/scripts/check-hidock-ready.sh`
+2. Run sync: `bash <skill-dir>/scripts/sync-recordings.sh`
 3. Report results
 
 **Expected output:**
@@ -18,7 +18,7 @@ Example interactions showing how the HiDock skill handles typical user requests.
 HiDock pre-flight OK
   node: v22.x.x
   npm: 10.x.x
-  dir: /Users/seansong/seanslab/HiDockSkill
+  dir: <hidock-skill-dir>
   OPENAI_API_KEY: set
 
 > meetings:sync
@@ -27,10 +27,10 @@ HiDock pre-flight OK
 [HiDock Sync] start at 2026-03-08T10:30:00.000Z total=5 candidate=2 selected=2 backend=local lastSuccess=2026-03-07T15:00:00.000Z
 [1/2] 20260308-091500-Rec00.hda
 [1/2] download complete (1048576 bytes)
-[1/2] saved -> /Users/seansong/.../meetings/hotmem/202603/20260308-091500-weekly-standup.md
+[1/2] saved -> <storage>/meetings/hotmem/202603/20260308-091500-weekly-standup.md
 [2/2] 20260308-093000-Wip00.hda
 [2/2] download complete (524288 bytes)
-[2/2] saved -> /Users/seansong/.../whispers/hotmem/20260308-093000.md
+[2/2] saved -> <storage>/whispers/hotmem/20260308-093000.md
 [HiDock Sync] end at 2026-03-08T10:32:00.000Z saved=2, skipped=0, failed=0
 ```
 
@@ -39,7 +39,7 @@ HiDock pre-flight OK
 - Meeting note saved: `meetings/hotmem/202603/20260308-091500-weekly-standup.md`
 - Whisper memo saved: `whispers/hotmem/20260308-093000.md`
 
-All recordings are stored in `/Users/seansong/seanslab/Obsidian/OpenClawWorkspace/MeetingNotes/`."
+All recordings are stored in the configured `MEETING_STORAGE_DIR`."
 
 ---
 
@@ -49,7 +49,7 @@ All recordings are stored in `/Users/seansong/seanslab/Obsidian/OpenClawWorkspac
 
 **Claude's actions:**
 1. Run pre-flight check
-2. Run dry-run: `bash scripts/sync-recordings.sh --dry-run`
+2. Run dry-run: `bash <skill-dir>/scripts/sync-recordings.sh --dry-run`
 
 **Expected output:**
 ```
@@ -76,7 +76,7 @@ Would you like me to sync them?"
 1. Run pre-flight check
 2. Check for existing processes: `pgrep -af "usb:watch|meetings:sync"`
 3. Warn about USB exclusivity
-4. Start watcher: `cd /Users/seansong/seanslab/HiDockSkill && npm run usb:watch`
+4. Start watcher: `cd "$HIDOCK_SKILL_DIR" && npm run usb:watch`
 
 **Claude's response before starting:**
 "Before I start the HiDock USB watcher, note that:
@@ -93,7 +93,7 @@ Starting the watcher now..."
 **User:** Is my HiDock watcher running? / Check HiDock status
 
 **Claude's actions:**
-1. Run status check: `bash scripts/watch-status.sh`
+1. Run status check: `bash <skill-dir>/scripts/watch-status.sh`
 
 **Claude's response:**
 "HiDock status:
@@ -123,7 +123,7 @@ Starting the watcher now..."
 
 **Claude's actions:**
 1. Run pre-flight check
-2. Run sync with limit: `bash scripts/sync-recordings.sh --limit 1`
+2. Run sync with limit: `bash <skill-dir>/scripts/sync-recordings.sh --limit 1`
 
 ---
 
@@ -133,7 +133,7 @@ Starting the watcher now..."
 
 **Claude's actions:**
 1. Run pre-flight check
-2. Run sync: `bash scripts/sync-recordings.sh --whisper-only`
+2. Run sync: `bash <skill-dir>/scripts/sync-recordings.sh --whisper-only`
 
 ---
 
@@ -144,7 +144,7 @@ Starting the watcher now..."
 **Pre-flight output:**
 ```
 HiDock pre-flight FAILED:
-  - OPENAI_API_KEY is not set (export it or add to /Users/seansong/seanslab/HiDockSkill/.env)
+  - OPENAI_API_KEY is not set (export it or add to $HIDOCK_SKILL_DIR/.env)
 ```
 
 **Claude's response:**
@@ -152,4 +152,4 @@ HiDock pre-flight FAILED:
 ```bash
 export OPENAI_API_KEY=sk-your-key-here
 ```
-Or add it to `/Users/seansong/seanslab/HiDockSkill/.env`. The key is needed for Whisper transcription and GPT summarization."
+Or add it to `$HIDOCK_SKILL_DIR/.env`. The key is needed for Whisper transcription and GPT summarization."

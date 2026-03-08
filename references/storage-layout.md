@@ -2,11 +2,7 @@
 
 ## Default Storage Path
 
-```
-/Users/seansong/seanslab/Obsidian/OpenClawWorkspace/MeetingNotes
-```
-
-Override with `--storage <dir>` flag or `MEETING_STORAGE_DIR` env var.
+Configured via `MEETING_STORAGE_DIR` env var or `--storage` CLI flag. See source code for the compiled-in default.
 
 ## Directory Structure
 

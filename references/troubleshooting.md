@@ -53,8 +53,8 @@ pgrep -af "usb:watch|meetings:sync|hidock"
 # Option 1: Export in shell
 export OPENAI_API_KEY=sk-...
 
-# Option 2: Add to .env file
-echo "OPENAI_API_KEY=sk-..." >> /Users/seansong/seanslab/HiDockSkill/.env
+# Option 2: Add to .env file in HiDockSkill directory
+echo "OPENAI_API_KEY=sk-..." >> "$HIDOCK_SKILL_DIR/.env"
 ```
 
 The `.env` file is gitignored and will be sourced automatically by the sync wrapper script.
@@ -77,7 +77,7 @@ The `.env` file is gitignored and will be sourced automatically by the sync wrap
 npm run meetings:sync -- --dry-run
 
 # Check sync state
-cat /Users/seansong/seanslab/Obsidian/OpenClawWorkspace/MeetingNotes/.hidock-sync-state.json
+cat <storage>/.hidock-sync-state.json
 ```
 
 **If you need to re-process:**
@@ -118,7 +118,7 @@ When memdock is unreachable or returns errors, the system **automatically falls 
 
 **Fix:**
 ```bash
-cd /Users/seansong/seanslab/HiDockSkill
+cd "$HIDOCK_SKILL_DIR"
 npm run build
 ```
 
@@ -126,7 +126,7 @@ npm run build
 
 **Fix:**
 ```bash
-cd /Users/seansong/seanslab/HiDockSkill
+cd "$HIDOCK_SKILL_DIR"
 npm install
 ```
 

@@ -10,7 +10,7 @@ When you say things like "sync my HiDock meetings" or "check my HiDock", Claude 
 
 ## Prerequisites
 
-- [HiDockSkill](https://github.com/seanspsong/HiDockSkill) installed at `/Users/seansong/seanslab/HiDockSkill`
+- [HiDockSkill](https://github.com/seanspsong/HiDockSkill) installed (set `HIDOCK_SKILL_DIR` env var to point to it)
 - Node.js and npm
 - `OPENAI_API_KEY` set in environment or `.env`
 - HiDock P1 device connected via USB

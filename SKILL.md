@@ -9,15 +9,19 @@ description: >
 
 # HiDock Skill
 
-Operate the HiDockSkill CLI at `/Users/seansong/seanslab/HiDockSkill` to sync, transcribe, and summarize recordings from the HiDock P1 USB meeting recorder.
+Operate the HiDockSkill CLI to sync, transcribe, and summarize recordings from the HiDock P1 USB meeting recorder.
+
+**HiDockSkill install directory** is referenced as `$HIDOCK_SKILL_DIR` throughout this skill. Resolve it by checking the `HIDOCK_SKILL_DIR` env var, or by locating the repo (look for the `hidockskill` package in `package.json`). Common location: a `HiDockSkill` directory within the user's workspace.
 
 ## Prerequisites
 
 Before any HiDock operation, run the pre-flight check:
 
 ```bash
-bash /Users/seansong/seanslab/HiDockSkill-Claude/scripts/check-hidock-ready.sh
+bash "$(dirname "$0")/scripts/check-hidock-ready.sh"
 ```
+
+(Where `$(dirname "$0")` is this skill's directory — adapt as needed.)
 
 If it fails, report the specific issue to the user and stop. Do NOT proceed with sync/watch commands if pre-flight fails.
 
@@ -28,7 +32,7 @@ If it fails, report the specific issue to the user and stop. Do NOT proceed with
 Pull new recordings from HiDock, transcribe with Whisper, summarize, and save as Markdown notes.
 
 ```bash
-bash /Users/seansong/seanslab/HiDockSkill-Claude/scripts/sync-recordings.sh
+bash <skill-dir>/scripts/sync-recordings.sh
 ```
 
 **What happens:**
@@ -49,12 +53,12 @@ bash /Users/seansong/seanslab/HiDockSkill-Claude/scripts/sync-recordings.sh
 
 **Example: dry run to preview**
 ```bash
-bash /Users/seansong/seanslab/HiDockSkill-Claude/scripts/sync-recordings.sh --dry-run
+bash <skill-dir>/scripts/sync-recordings.sh --dry-run
 ```
 
 **Example: sync only latest 3 recordings**
 ```bash
-bash /Users/seansong/seanslab/HiDockSkill-Claude/scripts/sync-recordings.sh --limit 3
+bash <skill-dir>/scripts/sync-recordings.sh --limit 3
 ```
 
 **After sync, report to user:**
@@ -67,7 +71,7 @@ bash /Users/seansong/seanslab/HiDockSkill-Claude/scripts/sync-recordings.sh --li
 Start a long-running process that monitors for HiDock plug-in events and auto-syncs.
 
 ```bash
-cd /Users/seansong/seanslab/HiDockSkill && npm run usb:watch
+cd "$HIDOCK_SKILL_DIR" && npm run usb:watch
 ```
 
 **IMPORTANT: USB Exclusivity Warning**
@@ -87,7 +91,7 @@ HiDock can only be owned by one app at a time. Before starting the watcher:
 Check if watcher/sync processes are running and when the last sync occurred.
 
 ```bash
-bash /Users/seansong/seanslab/HiDockSkill-Claude/scripts/watch-status.sh
+bash <skill-dir>/scripts/watch-status.sh
 ```
 
 Report to user:
@@ -116,7 +120,7 @@ If no output, watcher is stopped. Report to user.
 List recordings on the HiDock without processing them.
 
 ```bash
-bash /Users/seansong/seanslab/HiDockSkill-Claude/scripts/sync-recordings.sh --dry-run
+bash <skill-dir>/scripts/sync-recordings.sh --dry-run
 ```
 
 Report the file list, total count, and file sizes to the user.
@@ -124,12 +128,13 @@ Report the file list, total count, and file sizes to the user.
 ## Environment
 
 ### Required
-- `OPENAI_API_KEY` — needed for Whisper transcription and GPT summarization. Must be set in shell or in `/Users/seansong/seanslab/HiDockSkill/.env`.
+- `OPENAI_API_KEY` — needed for Whisper transcription and GPT summarization. Must be set in shell or in `$HIDOCK_SKILL_DIR/.env`.
 
 ### Optional
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `MEETING_STORAGE_DIR` | Root directory for meeting notes | `~/seanslab/Obsidian/OpenClawWorkspace/MeetingNotes` |
+| `HIDOCK_SKILL_DIR` | HiDockSkill CLI install directory | (auto-detected) |
+| `MEETING_STORAGE_DIR` | Root directory for meeting notes | (see code for compiled-in default) |
 | `WHISPER_MODEL` | Whisper model ID | `whisper-1` |
 | `SUMMARY_MODEL` | Summary model ID | `gpt-4o-mini` |
 | `WHISPER_LANGUAGE` | Language hint for Whisper | (auto-detect) |
@@ -143,7 +148,7 @@ For Memdock backend variables, see `references/memdock-backend.md`.
 
 ## Storage
 
-**Default path:** `/Users/seansong/seanslab/Obsidian/OpenClawWorkspace/MeetingNotes`
+**Default path:** configured via `MEETING_STORAGE_DIR` env var or `--storage` flag.
 
 Notes are organized into tiered storage based on recording age:
 - **hotmem** (0-30 days) — recent, actively referenced
@@ -176,7 +181,7 @@ Index files contain one line per recording with DateTime, Title, Attendee, Brief
 4. Kill any stale processes: `pkill -f "npm run usb:watch"` and `pkill -f "meetings:sync"`
 
 ### `OPENAI_API_KEY is required`
-Set the API key: `export OPENAI_API_KEY=sk-...` or add it to `/Users/seansong/seanslab/HiDockSkill/.env`
+Set the API key: `export OPENAI_API_KEY=sk-...` or add it to `$HIDOCK_SKILL_DIR/.env`
 
 ### No files to process
 - All recordings may already be synced (idempotent — safe to re-run)
@@ -193,7 +198,7 @@ Set the API key: `export OPENAI_API_KEY=sk-...` or add it to `/Users/seansong/se
 1. **USB exclusivity** — only one app can access HiDock at a time. Always warn the user before starting sync/watch.
 2. **No concurrent syncs** — never run two `meetings:sync` processes simultaneously. The sync coordinator uses a single-flight lock with debounce.
 3. **Idempotent re-runs** — running sync multiple times is safe. Already-processed files are tracked in the state file and index, and will be skipped.
-4. **Do NOT modify source code** — this skill wraps the CLI; never edit files in `/Users/seansong/seanslab/HiDockSkill/src/`.
+4. **Do NOT modify source code** — this skill wraps the CLI; never edit files in `$HIDOCK_SKILL_DIR/src/`.
 
 ## Reference Documentation
 

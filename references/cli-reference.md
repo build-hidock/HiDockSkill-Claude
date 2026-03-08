@@ -3,7 +3,7 @@
 ## `meetings:sync` — Sync & Transcribe Recordings
 
 ```bash
-cd /Users/seansong/seanslab/HiDockSkill
+cd "$HIDOCK_SKILL_DIR"
 npm run meetings:sync -- [options]
 ```
 
@@ -11,7 +11,7 @@ npm run meetings:sync -- [options]
 
 | Flag | Value | Description |
 |------|-------|-------------|
-| `--storage <dir>` | directory path | Storage root directory (default: `/Users/seansong/seanslab/Obsidian/OpenClawWorkspace/MeetingNotes`) |
+| `--storage <dir>` | directory path | Storage root directory (default: `$MEETING_STORAGE_DIR` or compiled-in default) |
 | `--state-file <path>` | file path | Sync state file path (default: `<storage>/.hidock-sync-state.json`) |
 | `--storage-backend <id>` | `local` or `memdock` | Notes storage backend (default: `local`) |
 | `--memdock-base-url <url>` | URL | Memdock API base URL (required for memdock backend) |
@@ -36,7 +36,7 @@ npm run meetings:sync -- [options]
 | Variable | Required | Description | Default |
 |----------|----------|-------------|---------|
 | `OPENAI_API_KEY` | Yes (unless `--dry-run`) | OpenAI API key for Whisper + GPT | — |
-| `MEETING_STORAGE_DIR` | No | Storage root directory | `~/seanslab/Obsidian/OpenClawWorkspace/MeetingNotes` |
+| `MEETING_STORAGE_DIR` | No | Storage root directory | (compiled-in default) |
 | `WHISPER_MODEL` | No | Whisper model ID | `whisper-1` |
 | `SUMMARY_MODEL` | No | Summary model ID | `gpt-4o-mini` |
 | `WHISPER_LANGUAGE` | No | Language hint | (auto-detect) |
@@ -60,7 +60,7 @@ npm run meetings:sync -- [options]
 ## `usb:watch` — USB Plug-In Monitor
 
 ```bash
-cd /Users/seansong/seanslab/HiDockSkill
+cd "$HIDOCK_SKILL_DIR"
 npm run usb:watch -- [options]
 ```
 
