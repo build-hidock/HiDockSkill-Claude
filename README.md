@@ -1,6 +1,6 @@
 # HiDockSkill-Claude
 
-A Claude Code skill that teaches Claude how to operate the [HiDockSkill](https://github.com/seanspsong/HiDockSkill) CLI — syncing recordings from HiDock P1, transcribing with Whisper, and storing Markdown meeting notes.
+A Claude Code skill that teaches Claude how to operate the [HiDockSkill](https://github.com/build-hidock/HiDockSkill) CLI — syncing recordings from HiDock P1, transcribing with Whisper, and storing Markdown meeting notes.
 
 ## What This Is
 
@@ -10,7 +10,7 @@ When you say things like "sync my HiDock meetings" or "check my HiDock", Claude 
 
 ## Prerequisites
 
-- [HiDockSkill](https://github.com/seanspsong/HiDockSkill) installed (set `HIDOCK_SKILL_DIR` env var to point to it)
+- [HiDockSkill](https://github.com/build-hidock/HiDockSkill) installed (set `HIDOCK_SKILL_DIR` env var to point to it)
 - Node.js and npm
 - `OPENAI_API_KEY` set in environment or `.env`
 - HiDock P1 device connected via USB
