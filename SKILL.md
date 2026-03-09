@@ -11,23 +11,61 @@ description: >
 
 Operate the HiDockSkill CLI to sync, transcribe, and summarize recordings from the HiDock P1 USB meeting recorder.
 
+**Skill directory:** `<skill-dir>` refers to the base directory specified when this skill was loaded.
+
 **HiDockSkill install directory** is referenced as `$HIDOCK_SKILL_DIR` throughout this skill. Resolve it by checking the `HIDOCK_SKILL_DIR` env var, or by locating the repo (look for the `hidockskill` package in `package.json`). Common location: a `HiDockSkill` directory within the user's workspace.
 
-## Prerequisites
+## Automatic Flow (MANDATORY)
 
-Before any HiDock operation, run the pre-flight check:
+**IMPORTANT: Every HiDock operation MUST follow this automatic sequence. Do NOT ask the user to perform manual steps or wait between stages. Run each step, and only stop if a step fails with an unrecoverable error.**
+
+### Step 1: Detect Device (instant, never hangs)
 
 ```bash
-bash "$(dirname "$0")/scripts/check-hidock-ready.sh"
+bash <skill-dir>/scripts/detect-device.sh
 ```
 
-(Where `$(dirname "$0")` is this skill's directory — adapt as needed.)
+- Exit 0 + `CONNECTED: <name>` → device is plugged in, proceed to Step 2.
+- Exit 1 + `NOT_CONNECTED` → device is NOT plugged in. Tell the user: _"HiDock P1 is not connected via USB. Please plug it in and make sure HiNotes web/browser is closed."_ Then STOP — do NOT run sync or dry-run (they will hang).
 
-If it fails, report the specific issue to the user and stop. Do NOT proceed with sync/watch commands if pre-flight fails.
+### Step 2: Pre-flight Check
+
+```bash
+bash <skill-dir>/scripts/check-hidock-ready.sh
+```
+
+This checks node, npm, HiDockSkill directory, compiled output, OPENAI_API_KEY, AND device presence. If it fails:
+- **Missing OPENAI_API_KEY** → tell user to provide it, add to `$HIDOCK_SKILL_DIR/.env`, then re-run.
+- **Missing node_modules** → run `cd $HIDOCK_SKILL_DIR && npm install`, then re-run.
+- **Missing dist/** → run `cd $HIDOCK_SKILL_DIR && npm run build`, then re-run.
+- **Other failures** → report the specific error and stop.
+
+If pre-flight passes, proceed to Step 3.
+
+### Step 3: Execute the Requested Action
+
+Determine what the user wants and execute the matching workflow below. If the intent is ambiguous (e.g., "check HiDock"), default to **Check Device** to show what's on the device.
+
+---
 
 ## Core Workflows
 
-### 1. Sync Recordings (`sync`)
+### 1. Check Device (`check`) — DEFAULT for ambiguous requests
+
+List recordings on the HiDock without processing them.
+
+```bash
+bash <skill-dir>/scripts/sync-recordings.sh --dry-run
+```
+
+**After running, report to user:**
+- Total file count
+- Breakdown by type (Rec = meetings, Wip = whisper memos, Room = room recordings, Call = calls, Whsp = whisper)
+- Date range
+- Largest files
+- How many are new (not yet synced)
+
+### 2. Sync Recordings (`sync`)
 
 Pull new recordings from HiDock, transcribe with Whisper, summarize, and save as Markdown notes.
 
@@ -51,22 +89,12 @@ bash <skill-dir>/scripts/sync-recordings.sh
 - `--meetings-only` — only process meeting recordings (non-Whisper)
 - `--language CODE` — Whisper language hint (e.g., `en`, `zh`)
 
-**Example: dry run to preview**
-```bash
-bash <skill-dir>/scripts/sync-recordings.sh --dry-run
-```
-
-**Example: sync only latest 3 recordings**
-```bash
-bash <skill-dir>/scripts/sync-recordings.sh --limit 3
-```
-
 **After sync, report to user:**
 - Number of files saved, skipped, failed
 - Path to generated notes
 - Any errors encountered
 
-### 2. Start USB Watch (`watch`)
+### 3. Start USB Watch (`watch`)
 
 Start a long-running process that monitors for HiDock plug-in events and auto-syncs.
 
@@ -76,9 +104,8 @@ cd "$HIDOCK_SKILL_DIR" && npm run usb:watch
 
 **IMPORTANT: USB Exclusivity Warning**
 HiDock can only be owned by one app at a time. Before starting the watcher:
-1. Check if HiNotes web / browser tab is open and connected to HiDock
-2. Check if another watcher/sync process is already running
-3. Warn the user that HiNotes web will not work while the watcher is running
+1. Check if another watcher/sync process is already running (use `watch-status.sh`)
+2. Warn the user that HiNotes web will not work while the watcher is running
 
 **Common flags:**
 - `--interval-ms N` — poll interval (default: 5000ms)
@@ -86,13 +113,15 @@ HiDock can only be owned by one app at a time. Before starting the watcher:
 - `--no-emit-on-startup` — suppress notification if device already connected
 - `--sync-debounce-ms N` — debounce window before auto-sync (default: 1500ms)
 
-### 3. Check Status (`status`)
+### 4. Check Status (`status`)
 
-Check if watcher/sync processes are running and when the last sync occurred.
+Check if watcher/sync processes are running and when the last sync occurred. This does NOT require the device to be connected.
 
 ```bash
 bash <skill-dir>/scripts/watch-status.sh
 ```
+
+**Note:** For status checks, use `check-hidock-ready.sh --skip-device` for pre-flight (device not needed).
 
 Report to user:
 - Whether watcher is running (PID if yes)
@@ -100,7 +129,7 @@ Report to user:
 - Last successful sync timestamp
 - Number of processed recordings
 
-### 4. Stop Watcher (`stop-watch`)
+### 5. Stop Watcher (`stop-watch`)
 
 Safely stop the USB watcher process.
 
@@ -115,15 +144,7 @@ pgrep -af "usb:watch|meetings:sync"
 
 If no output, watcher is stopped. Report to user.
 
-### 5. Check Device (`check`)
-
-List recordings on the HiDock without processing them.
-
-```bash
-bash <skill-dir>/scripts/sync-recordings.sh --dry-run
-```
-
-Report the file list, total count, and file sizes to the user.
+---
 
 ## Environment
 
@@ -189,6 +210,7 @@ Set the API key: `export OPENAI_API_KEY=sk-...` or add it to `$HIDOCK_SKILL_DIR/
 - Use `--dry-run` to see what's on the device
 
 ### Device not found
+- Run `detect-device.sh` first — it returns instantly and tells you if the device is connected
 - Ensure HiDock P1 is connected via USB cable
 - Try unplugging and re-plugging
 - On macOS: check `System Information > USB` for "HiDock" device
@@ -199,6 +221,7 @@ Set the API key: `export OPENAI_API_KEY=sk-...` or add it to `$HIDOCK_SKILL_DIR/
 2. **No concurrent syncs** — never run two `meetings:sync` processes simultaneously. The sync coordinator uses a single-flight lock with debounce.
 3. **Idempotent re-runs** — running sync multiple times is safe. Already-processed files are tracked in the state file and index, and will be skipped.
 4. **Do NOT modify source code** — this skill wraps the CLI; never edit files in `$HIDOCK_SKILL_DIR/src/`.
+5. **NEVER run sync or dry-run without detecting device first** — these commands will hang indefinitely if the device is not connected. Always run `detect-device.sh` before any USB-dependent operation.
 
 ## Reference Documentation
 
