@@ -16,4 +16,5 @@ if [ -f .env ]; then
   set +a
 fi
 
-exec node dist/cli/usbWatch.js "$@"
+# Merge stdout into stderr so launchd captures all output (avoids stdout buffering)
+exec node dist/cli/usbWatch.js "$@" 1>&2

@@ -4,7 +4,7 @@ description: >
   Manages HiDock USB meeting recorder: syncs recordings, transcribes with Whisper,
   summarizes with GPT-4o-mini, and stores as Markdown notes. Use when user mentions
   HiDock, meeting recordings, transcription sync, USB watch, meeting notes, "sync my
-  meetings", "check HiDock", "start watching", or "P1 recordings".
+  meetings", "check HiDock", "start watching", "P1 recordings", or just says "HiDock".
 ---
 
 # HiDock Skill
@@ -44,13 +44,27 @@ If pre-flight passes, proceed to Step 3.
 
 ### Step 3: Execute the Requested Action
 
-Determine what the user wants and execute the matching workflow below. If the intent is ambiguous or the user just says "HiDock" without a specific action, default to **Sync + Galaxy** — sync the device and open the galaxy dashboard.
+Determine what the user wants and execute the matching workflow below.
+
+**If the user just says "HiDock" with no other context**, skip Steps 1-2 and run the **Open Galaxy** command directly — no device or pre-flight check needed.
 
 ---
 
 ## Core Workflows
 
-### 1. Sync + Galaxy — DEFAULT for ambiguous requests (e.g., user just says "HiDock")
+### 0. Open Galaxy (`HiDock`) — DEFAULT when user just says "HiDock"
+
+**No device or pre-flight check needed.** Just open the galaxy dashboard web page.
+
+```bash
+bash <skill-dir>/scripts/open-galaxy.sh
+```
+
+This will:
+- If the galaxy server is already running on port 18180, open the browser to it
+- If not running, start the galaxy server with existing note data and open the browser
+
+### 1. Sync + Galaxy — DEFAULT for sync requests (e.g., "sync HiDock", "sync my meetings")
 
 **This is the default when the user just mentions "HiDock" without a specific action.**
 
