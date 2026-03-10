@@ -44,13 +44,28 @@ If pre-flight passes, proceed to Step 3.
 
 ### Step 3: Execute the Requested Action
 
-Determine what the user wants and execute the matching workflow below. If the intent is ambiguous (e.g., "check HiDock"), default to **Check Device** to show what's on the device.
+Determine what the user wants and execute the matching workflow below. If the intent is ambiguous or the user just says "HiDock" without a specific action, default to **Sync + Galaxy** — sync the device and open the galaxy dashboard.
 
 ---
 
 ## Core Workflows
 
-### 1. Check Device (`check`) — DEFAULT for ambiguous requests
+### 1. Sync + Galaxy — DEFAULT for ambiguous requests (e.g., user just says "HiDock")
+
+**This is the default when the user just mentions "HiDock" without a specific action.**
+
+1. Open the galaxy dashboard in syncing mode (shows purple pulsing "Syncing HiDock device" animation):
+   ```bash
+   cd "$HIDOCK_SKILL_DIR" && npm run galaxy:open &
+   ```
+2. Run sync:
+   ```bash
+   bash <skill-dir>/scripts/sync-recordings.sh
+   ```
+3. After sync completes, the galaxy dashboard auto-refreshes to show the note graph.
+4. Report to user: files synced, and that the galaxy dashboard is open.
+
+### 2. Check Device (`check`)
 
 List recordings on the HiDock without processing them.
 
@@ -65,7 +80,7 @@ bash <skill-dir>/scripts/sync-recordings.sh --dry-run
 - Largest files
 - How many are new (not yet synced)
 
-### 2. Sync Recordings (`sync`)
+### 3. Sync Recordings (`sync`)
 
 Pull new recordings from HiDock, transcribe with Whisper, summarize, and save as Markdown notes.
 
@@ -94,7 +109,7 @@ bash <skill-dir>/scripts/sync-recordings.sh
 - Path to generated notes
 - Any errors encountered
 
-### 3. Start USB Watch (`watch`)
+### 4. Start USB Watch (`watch`)
 
 Start a long-running process that monitors for HiDock plug-in events and auto-syncs.
 
@@ -113,7 +128,7 @@ HiDock can only be owned by one app at a time. Before starting the watcher:
 - `--no-emit-on-startup` — suppress notification if device already connected
 - `--sync-debounce-ms N` — debounce window before auto-sync (default: 1500ms)
 
-### 4. Check Status (`status`)
+### 5. Check Status (`status`)
 
 Check if watcher/sync processes are running and when the last sync occurred. This does NOT require the device to be connected.
 
@@ -129,7 +144,7 @@ Report to user:
 - Last successful sync timestamp
 - Number of processed recordings
 
-### 5. Stop Watcher (`stop-watch`)
+### 6. Stop Watcher (`stop-watch`)
 
 Safely stop the USB watcher process.
 
